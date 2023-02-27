@@ -7,19 +7,21 @@ from collections import OrderedDict
 #-------------------------------------------------#
 #   卷积块
 #   CONV+BATCHNORM+LeakyReLU
+#   in_channel：输入数据的通道数；out_channel：输出数据的通道数；stride：步长，默认为1；
+#   kernel_size: 卷积核大小，kernel_size=2,意味着卷积大小(2,2)，kernel_size=（2,3），意味着卷积大小（2，3）即非正方形卷积
 #-------------------------------------------------#
 class BasicConv(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size, stride=1):
         super(BasicConv, self).__init__()
 
-        self.conv = nn.Conv2d(in_channels, out_channels, kernel_size, stride, kernel_size//2, bias=False)
+        self.conv = nn.Conv2d(in_channels, out_channels, kernel_size, stride, kernel_size//2, bias=False)#bias=False卷积运算是否需要偏置bias，默认为False
         self.bn = nn.BatchNorm2d(out_channels)
         self.activation = nn.LeakyReLU(0.1)
 
 
 
     def forward(self, x):
-        x = self.conv(x)
+        
         x = self.bn(x)
         x = self.activation(x)
         return x
@@ -27,6 +29,7 @@ class BasicConv(nn.Module):
 #   CSPdarknet53-tiny的结构块
 #   存在一个大残差边
 #   这个大残差边绕过了很多的残差结构
+#   python中//表示结果向下取整，/表示结果向上取整
 #---------------------------------------------------#
 class Resblock_body(nn.Module):
     def __init__(self, in_channels, out_channels):
