@@ -45,7 +45,7 @@ class Resblock_body(nn.Module):
         self.maxpool = nn.MaxPool2d([2,2],[2,2])
 
 
-    def forward(self, x):
+    def forward(self, x): #重写父类方法
         x = self.conv1(x)
         route = x
         c = self.out_channels
@@ -107,7 +107,7 @@ class CSPDarkNet(nn.Module):
         self.resblock_body3 =  Resblock_body(256, 256)
         self.conv3 = BasicConv(512, 512, kernel_size=3)
 
-        # self.se_1 = SELayer(64)
+        # self.se_1 = SELayer(64)       SE模块
         # self.se_2 = SELayer(128)
         # self.se_3 = SELayer(256)
         # self.se_4 = SELayer(384)
