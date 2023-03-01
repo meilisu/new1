@@ -35,11 +35,11 @@ class Resblock_body(nn.Module):
     def __init__(self, in_channels, out_channels):
         super(Resblock_body, self).__init__()
         self.out_channels = out_channels
-
+#   在YOLOV4中，只有kernel=1和3两种情况，1的时候padding为0,3的时候padding为1;padding零填充
         self.conv1 = BasicConv(in_channels, out_channels, 3)
 
-        self.conv2 = BasicConv(out_channels//2, out_channels//2, 3)
-        self.conv3 = BasicConv(out_channels//2, out_channels//2, 3)
+        self.conv2 = BasicConv(out_channels//2, out_channels//2, 3)#通道数减半
+        self.conv3 = BasicConv(out_channels//2, out_channels//2, 3)#通道数减半            ??为什么有两个out_channels
 
         self.conv4 = BasicConv(out_channels, out_channels, 1)
         self.maxpool = nn.MaxPool2d([2,2],[2,2])
@@ -49,7 +49,7 @@ class Resblock_body(nn.Module):
         x = self.conv1(x)
         route = x
         c = self.out_channels
-        x = torch.split(x, c//2, dim=1)[1]
+        x = torch.split(x, c//2, dim=1)[1]#按照x这个维度去分，每大块包含c//2个小块????这里x是conv1，那conv1是几 
         x = self.conv2(x)
         route1 = x
         x = self.conv3(x)
@@ -118,13 +118,15 @@ class CSPDarkNet(nn.Module):
 
         self.num_features = 1
         # 进行权值初始化
-        for m in self.modules():
-            if isinstance(m, nn.Conv2d):
+        #是来对相应的参数的初始化的过程的。进行参数的初始化是会来加快模型收敛速度的。先从self.modules()中遍历每一层，然后判断更层属于什么类型，是否是Conv2d，
+        #是否是BatchNorm2d，然后根据不同类型的层，设定不同的权值初始化方法
+        for m in self.modules(): ## 依次来返回模型中的各个层的
+            if isinstance(m, nn.Conv2d):## 判断是否是相同的实例对象的
                 n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
-                m.weight.data.normal_(0, math.sqrt(2. / n))
+                m.weight.data.normal_(0, math.sqrt(2. / n)) ## m.weight.data是对应的卷积核参数
             elif isinstance(m, nn.BatchNorm2d):
-                m.weight.data.fill_(1)
-                m.bias.data.zero_()
+                m.weight.data.fill_(1) ## 对全部的权重初始化为1
+                m.bias.data.zero_() ## 对权重进行初始化为0
 
 
     def forward(self, x):
